@@ -104,32 +104,39 @@ def hemisphere_data(browser):
     url = 'https://marshemispheres.com/'
     browser.visit(url)
     # Optional delay for loading the page
-    browser.is_element_present_by_css('ul.item_list li.slide', wait_time=1)
+    # browser.is_element_present_by_css('img.thumb', wait_time=1)
 
     # Create a list to hold the images and titles.
     hemisphere_image_urls = []
 
     html = browser.html
     hemi_soup = soup(html, 'html.parser')
-    hemi_links = hemi_soup.find_all('h3')
+    hemi_links = hemi_soup.find_all('div', class_='description')
 
     for hemi in hemi_links:
-        image_page = browser.find_by_text(hemi.text)
-        image_page.click()
+        hemisphere_title = hemi.find('h3').text
 
+         # Find and click the full image button
+        image_link = hemi.find('a', class_='itemLink product-item')['href']
+        hemisphere_img_url = url + image_link
+
+        # Use browser to visit the URL 
+        browser.visit(hemisphere_img_url)
+
+        # Convert the browser html to a soup object
         image_html = browser.html
         image_soup = soup(image_html, 'html.parser')
-        image_url = 'https://marshemispheres.com/' + str(image_soup.find('img', class_='wide-image')['src'])
+        image = image_soup.find('div', class_='downloads')
+        image_url = image.find('a')['href']
 
-        title = image_soup.find('h2', class_='title').text
-        # Define and append to the dictionary
-        hemisphere = {'img_url': image_url,'title': title}
-        hemisphere_image_urls.append(hemisphere)
-        browser.back()
-
+        # add data to dictionary
+        hemisphere_data = {
+            'image_url': url+image_url,
+            'title': hemisphere_title
+        }
+        hemisphere_image_urls.append(hemisphere_data)
 
     return hemisphere_image_urls
-
 
 if __name__ == "__main__":
 
